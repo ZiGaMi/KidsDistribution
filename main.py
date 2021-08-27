@@ -109,6 +109,7 @@ class DistributionTable(KidsPopulation):
     # ===============================================================================  
     def __init__(self, pop):
         self.table = {  "Tip":                  [],
+                        "Posebnost":            [],
                         "Starostni razred":     [],
                         "Velikosti razred":     [],
                         "Stevilo otrok":        [],
@@ -125,9 +126,10 @@ class DistributionTable(KidsPopulation):
     # @param[in]:   type            - Type of groupe (homogen, heterogen, combination)
     # @param[in]:   years           - Array of years as a target groupe
     # @param[in]:   size_of_groupe  - Array of groupe [min,max] childs
+    # @param[in]:   exception       - Number of exception
     # @return:      void
     # ===============================================================================  
-    def add(self, type, years, size_of_groupe):
+    def add(self, type, years, size_of_groupe, exception=None):
         
         # Calculate number of kids
         num_of_kids = self.kids.get_num_of_kids_by_age_specific( years )
@@ -143,6 +145,7 @@ class DistributionTable(KidsPopulation):
 
         # Fill table
         self.table["Tip"].append(type)
+        self.table["Posebnost"].append(exception)
         self.table["Starostni razred"].append(years)
         self.table["Velikosti razred"].append(size_of_groupe)
         self.table["Stevilo otrok"].append( num_of_kids )
@@ -221,10 +224,10 @@ class DistributionTable(KidsPopulation):
     def __evaluate_case__(self, num_of_groups, num_of_remains):
 
         if num_of_groups == 0:
-            return "PREMALO OTROK: Ni moč oblikovati niti enega oddelka!"
+            return "PREMALO OTROK"
         else:
             if num_of_remains == 0:
-                return "POPOLNA RAZPOREDITEV: Vsi otroci so porazdeljeni v oddelke!"
+                return "POPOLNA RAZPOREDITEV"
             else:
                 return "PREVEC OTROK: %s otrok je prevec in jih ni moc dodati v oddelke!" % num_of_remains
 
@@ -262,28 +265,34 @@ if __name__ == "__main__":
     # ==========================================================================================
     # Add all posible combination of kids groups based on year and size of groupe criteria
     # ==========================================================================================
-    #           Type        Years           Grupe limits
-    table.add(  "Homogen",  [0,1],          [9,12]      );
-    table.add(  "Homogen",  [1,2],          [9,12]      );
-    table.add(  "Homogen",  [0,0],          [9,12]      );
-    table.add(  "Homogen",  [1,1],          [9,12]      );
-    table.add(  "Homogen",  [2,2],          [9,12]      );
-    table.add(  "Homogen",  [3,4],          [12,17]     );
-    table.add(  "Homogen",  [4,5],          [17,22]      );
-    table.add(  "Homogen",  [5,6],          [17,22]      );
-    table.add(  "Homogen",  [6,7],          [17,22]      );
-    table.add(  "Homogen",  [3,3],          [17,22]      );
-    table.add(  "Homogen",  [4,4],          [17,22]      );
-    table.add(  "Homogen",  [5,5],          [17,22]      );
-    table.add(  "Homogen",  [6,6],          [17,22]      );
-    table.add(  "Homogen",  [7,7],          [17,22]      );
-    table.add(  "Homogen",  [0,1,2],        [9,12]      );
-    table.add(  "Homogen",  [3,4,5],        [17,22]      );
-    table.add(  "Homogen",  [3,4,5,6],      [17,22]      );
-    table.add(  "Homogen",  [3,4,5,6,7],    [17,22]      );
-    table.add(  "Homogen",  [4,5,6],        [17,22]      );
-    table.add(  "Homogen",  [4,5,6,7],      [17,12]      );
-    table.add(  "Homogen",  [5,6,7],        [17,22]      );
+    #           Type            Years                   Grupe limits        Posebnost
+    table.add(  "Homogen",      [0,1],                  [9,12]       );
+    table.add(  "Homogen",      [1,2],                  [9,12]       );
+    table.add(  "Homogen",      [0,0],                  [9,12]       );
+    table.add(  "Homogen",      [1,1],                  [9,12]       );
+    table.add(  "Homogen",      [2,2],                  [9,12]       );
+    table.add(  "Homogen",      [3,4],                  [12,17]      );
+    table.add(  "Homogen",      [4,5],                  [17,22]      );
+    table.add(  "Homogen",      [5,6],                  [17,22]      );
+    table.add(  "Homogen",      [6,7],                  [17,22]      );
+    table.add(  "Homogen",      [3],                    [17,22]      );
+    table.add(  "Homogen",      [4],                    [17,22]      );
+    table.add(  "Homogen",      [5],                    [17,22]      );
+    table.add(  "Homogen",      [6],                    [17,22]      );
+    table.add(  "Homogen",      [7],                    [17,22]      );
+    table.add(  "Homogen",      [0,1,2],                [9,12],         1   );
+    table.add(  "Homogen",      [3,4,5],                [12,17],        1   );
+    table.add(  "Homogen",      [3,4,5],                [17,22],        1   );
+    table.add(  "Homogen",      [3,4,5,6],              [12,17],        1   );
+    table.add(  "Homogen",      [3,4,5,6],              [17,22],        1   );
+    table.add(  "Homogen",      [3,4,5,6,7],            [12,17],        1   );
+    table.add(  "Homogen",      [3,4,5,6,7],            [17,22],        1   );
+    table.add(  "Homogen",      [4,5,6],                [17,22],        1   );
+    table.add(  "Homogen",      [4,5,6,7],              [17,12],        1   );
+    table.add(  "Homogen",      [5,6,7],                [17,22],        1   );
+    table.add(  "Heterogen",    [0,1,2],                [7,10]      );
+    table.add(  "Heterogen",    [3,4,5,6,7],            [14,19]     );
+    table.add(  "Kombiniran",   [0,1,2,3,4,5,6,7],      [10,17]     );
 
     # Add more here if needed...
 
