@@ -257,6 +257,73 @@ class IntermediateTable(KidsPopulation):
 
 
 # ===============================================================================
+# @brief:   End table
+#
+#   End table row contains all combinations of groups from intermediate table that
+#   obtains whole kids generations, meaning all years.
+#   
+#   Results of this table means best possible combination of kids
+#   
+# ===============================================================================
+class EndTable(IntermediateTable):
+
+    # ===============================================================================
+    # @brief:   Create end table
+    #
+    # @param[in]:   intermediate_table - Intermediate population
+    # @return:      void
+    # ===============================================================================  
+    def __init__(self, intermediate_table):
+        self.end_table = {  "Kombinacija let otrok":        [],
+                            "Koncni rezultat":              [],
+                            "Št. homogenih sk.":            [],
+                            "Št. heterogenih sk.":          [],
+                            "Št. kobiniranih sk.":          [],
+                        }
+        
+        self.intermediate_table = intermediate_table
+
+
+    def add(self, int_table_idx):
+
+        result = 0
+        num_of_homogen = 0
+        num_of_heterogen = 0
+        num_of_combination = 0
+
+        for idx in int_table_idx:
+            self.end_table["Combination of year groups"].append( self.intermediate_table["Velikosti razred"] )
+
+            if self.intermediate_table.HOMOGENE_GROUPE == self.intermediate_table["Tip"]:
+                num_of_homogen += 1
+            elif self.intermediate_table.HETEROGENE_GROUPE == self.intermediate_table["Tip"]:
+                num_of_heterogen += 1
+            elif self.intermediate_table.COMBINATION_GROUPE == self.intermediate_table["Tip"]:
+                num_of_combination += 1
+
+            result += self.intermediate_table["Rezultat"]
+        
+        # Calculate end result
+        result = result / len( int_table_idx )
+
+        # Save result
+        self.end_table["Combination of year groups"].append( result )
+
+        # Save number of each groupe type
+        self.end_table["Št. homogenih sk."].append( num_of_homogen )
+        self.end_table["Št. heterogenih sk."].append( num_of_heterogen )
+        self.end_table["Št. kombiniranih sk."].append( num_of_combination )
+
+    def print(self):
+        print(tabulate(self.end_table, headers='keys', tablefmt='fancy_grid', showindex=True, numalign="center", stralign="left"))
+
+
+
+
+
+
+
+# ===============================================================================
 #       FUNCTIONS
 # ===============================================================================
 
@@ -283,44 +350,63 @@ if __name__ == "__main__":
     kids.print()
     
     # Create intermediate table for calculation and evaluation purposes
-    table = IntermediateTable( kids )
+    int_table = IntermediateTable( kids )
     
     # ==========================================================================================
     # Add all posible combination of kids groups based on year and size of groupe criteria
     # ==========================================================================================
     #           Type                        Years                   Grupe limits     
-    table.add(  kids.HOMOGENE_GROUPE,      [0,1],                  [9,12]       );
-    table.add(  kids.HOMOGENE_GROUPE,      [1,2],                  [9,12]       );
-    table.add(  kids.HOMOGENE_GROUPE,      [0,0],                  [9,12]       );
-    table.add(  kids.HOMOGENE_GROUPE,      [1,1],                  [9,12]       );
-    table.add(  kids.HOMOGENE_GROUPE,      [2,2],                  [9,12]       );
-    table.add(  kids.HOMOGENE_GROUPE,      [3,4],                  [12,17]      );
-    table.add(  kids.HOMOGENE_GROUPE,      [4,5],                  [17,22]      );
-    table.add(  kids.HOMOGENE_GROUPE,      [5,6],                  [17,22]      );
-    table.add(  kids.HOMOGENE_GROUPE,      [6,7],                  [17,22]      );
-    table.add(  kids.HOMOGENE_GROUPE,      [3],                    [17,22]      );
-    table.add(  kids.HOMOGENE_GROUPE,      [4],                    [17,22]      );
-    table.add(  kids.HOMOGENE_GROUPE,      [5],                    [17,22]      );
-    table.add(  kids.HOMOGENE_GROUPE,      [6],                    [17,22]      );
-    table.add(  kids.HOMOGENE_GROUPE,      [7],                    [17,22]      );
-    table.add(  kids.HOMOGENE_GROUPE,      [0,1,2],                [9,12],      exception=1   );
-    table.add(  kids.HOMOGENE_GROUPE,      [3,4,5],                [12,17],     exception=1   );
-    table.add(  kids.HOMOGENE_GROUPE,      [3,4,5],                [17,22],     exception=1   );
-    table.add(  kids.HOMOGENE_GROUPE,      [3,4,5,6],              [12,17],     exception=1   );
-    table.add(  kids.HOMOGENE_GROUPE,      [3,4,5,6],              [17,22],     exception=1   );
-    table.add(  kids.HOMOGENE_GROUPE,      [3,4,5,6,7],            [12,17],     exception=1   );
-    table.add(  kids.HOMOGENE_GROUPE,      [3,4,5,6,7],            [17,22],     exception=1   );
-    table.add(  kids.HOMOGENE_GROUPE,      [4,5,6],                [17,22],     exception=1   );
-    table.add(  kids.HOMOGENE_GROUPE,      [4,5,6,7],              [17,12],     exception=1   );
-    table.add(  kids.HOMOGENE_GROUPE,      [5,6,7],                [17,22],     exception=1   );
-    table.add(  kids.HETEROGENE_GROUPE,    [0,1,2],                [7,10]      );
-    table.add(  kids.HETEROGENE_GROUPE,    [3,4,5,6,7],            [14,19]     );
-    table.add(  kids.COMBINATION_GROUPE,   [0,1,2,3,4,5,6,7],      [10,17]     );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [0,1],                  [9,12]       );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [1,2],                  [9,12]       );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [0,0],                  [9,12]       );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [1,1],                  [9,12]       );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [2,2],                  [9,12]       );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [3,4],                  [12,17]      );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [4,5],                  [17,22]      );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [5,6],                  [17,22]      );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [6,7],                  [17,22]      );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [3],                    [17,22]      );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [4],                    [17,22]      );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [5],                    [17,22]      );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [6],                    [17,22]      );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [7],                    [17,22]      );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [0,1,2],                [9,12],      exception=1   );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [3,4,5],                [12,17],     exception=1   );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [3,4,5],                [17,22],     exception=1   );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [3,4,5,6],              [12,17],     exception=1   );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [3,4,5,6],              [17,22],     exception=1   );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [3,4,5,6,7],            [12,17],     exception=1   );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [3,4,5,6,7],            [17,22],     exception=1   );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [4,5,6],                [17,22],     exception=1   );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [4,5,6,7],              [17,12],     exception=1   );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [5,6,7],                [17,22],     exception=1   );
+    int_table.add(  kids.HETEROGENE_GROUPE,    [0,1,2],                [7,10]      );
+    int_table.add(  kids.HETEROGENE_GROUPE,    [3,4,5,6,7],            [14,19]     );
+    int_table.add(  kids.COMBINATION_GROUPE,   [0,1,2,3,4,5,6,7],      [10,17]     );
     
     # Add more here if needed...
 
-    # Show distributiom table
-    table.print()
+    # Show intermediate table
+    print("")
+    print("*******************************************************************************************************")
+    print("     INTERMEDIATE TABLE")
+    print("*******************************************************************************************************")
+    print("")
+    int_table.print()
+
+    # Create end table
+    end_table = EndTable( int_table )
+
+    # Add end combinations
+
+
+    # Show end table
+    print("")
+    print("*******************************************************************************************************")
+    print("     END TABLE")
+    print("*******************************************************************************************************")
+    print("")
+    end_table.print()
 
     # Wait prompt
     input("Press ENTER to exit...")
