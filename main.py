@@ -22,6 +22,12 @@ import copy
 ## Current year of analysis
 CURRENT_YEAR = 2021
 
+## Number of groups is zero
+#
+# @note This must be a prime number in order to hide information
+#       of possible combination in end table
+GROUP_ZERO_MAGIC_NUM = 57
+
 # ===============================================================================
 #       FUNCTIONS
 # ===============================================================================
@@ -146,7 +152,7 @@ class IntermediateTable(KidsPopulation):
         num_of_groups, num_of_remains = self.__calc_num_of_groups__( size_of_groupe, num_of_kids )
 
         # Determine result
-        result = self.__evaluate_case__( num_of_groups, num_of_remains )
+        result = self.__calc_result__( type, num_of_groups, num_of_remains, exception )
 
         # Fill table
         self.table["Tip"].append(type["name"])
@@ -226,15 +232,27 @@ class IntermediateTable(KidsPopulation):
     # @param[in]:   num_of_remains  - Number of remains child
     # @return:      resutl          - Result of evaluation
     # ===============================================================================  
-    def __evaluate_case__(self, num_of_groups, num_of_remains):
+    def __calc_result__(self, type, num_of_groups, num_of_remains, exception):
+        result = 1
 
+        # Apply type of groupe
+        result *= type["weight"]
+
+        # Apply number of groups
         if num_of_groups == 0:
-            return "PREMALO OTROK"
+            result *= GROUP_ZERO_MAGIC_NUM
         else:
-            if num_of_remains == 0:
-                return "POPOLNA RAZPOREDITEV"
-            else:
-                return "PREVEC OTROK: %s otrok je prevec in jih ni moc dodati v oddelke!" % num_of_remains
+            result *= num_of_groups
+
+        # Apply number of remains
+        result *= ( 2*num_of_remains + 1 )
+
+        # Apply exception
+        # NOTE: Exception is wanted!
+        if exception is not None:
+            result *= 0.5
+
+        return result
 
 
 
