@@ -253,6 +253,33 @@ class IntermediateTable(KidsPopulation):
             result *= 0.5
 
         return result
+    
+    def get_type(self, idx):
+        return self.table["Tip"][idx]
+    
+    def get_years(self, idx):
+        return self.table["Velikosti razred"][idx]
+
+    def is_homogene_type(self, idx):
+        if self.get_type(idx) == self.HOMOGENE_GROUPE["name"]:
+            return True
+        else:
+            return False
+
+    def is_heterogene_type(self, idx):
+        if self.get_type(idx) == self.HETEROGENE_GROUPE["name"]:
+            return True
+        else:
+            return False
+
+    def is_combination_type(self, idx):
+        if self.get_type(idx) == self.COMBINATION_GROUPE["name"]:
+            return True
+        else:
+            return False
+
+    def get_result(self, idx):
+        return float(self.table["Rezultat"][idx])
 
 
 
@@ -278,36 +305,42 @@ class EndTable(IntermediateTable):
                             "Koncni rezultat":              [],
                             "Št. homogenih sk.":            [],
                             "Št. heterogenih sk.":          [],
-                            "Št. kobiniranih sk.":          [],
+                            "Št. kombiniranih sk.":          [],
                         }
         
         self.intermediate_table = intermediate_table
 
 
     def add(self, int_table_idx):
-
+        
+        years = []
         result = 0
         num_of_homogen = 0
         num_of_heterogen = 0
         num_of_combination = 0
 
         for idx in int_table_idx:
-            self.end_table["Combination of year groups"].append( self.intermediate_table["Velikosti razred"] )
+            #self.end_table["Kombinacija let otrok"].append( self.intermediate_table.get_years(idx) )
+            years.append( self.intermediate_table.get_years(idx) )
 
-            if self.intermediate_table.HOMOGENE_GROUPE == self.intermediate_table["Tip"]:
+            if self.intermediate_table.is_homogene_type( idx ):
                 num_of_homogen += 1
-            elif self.intermediate_table.HETEROGENE_GROUPE == self.intermediate_table["Tip"]:
+            elif self.intermediate_table.is_heterogene_type(idx):
                 num_of_heterogen += 1
-            elif self.intermediate_table.COMBINATION_GROUPE == self.intermediate_table["Tip"]:
+            elif self.intermediate_table.is_combination_type(idx):
                 num_of_combination += 1
 
-            result += self.intermediate_table["Rezultat"]
+            # Sum result 
+            result += self.intermediate_table.get_result(idx)
         
         # Calculate end result
         result = result / len( int_table_idx )
 
+        # Save years
+        self.end_table["Kombinacija let otrok"].append( years )
+
         # Save result
-        self.end_table["Combination of year groups"].append( result )
+        self.end_table["Koncni rezultat"].append( result )
 
         # Save number of each groupe type
         self.end_table["Št. homogenih sk."].append( num_of_homogen )
@@ -316,11 +349,6 @@ class EndTable(IntermediateTable):
 
     def print(self):
         print(tabulate(self.end_table, headers='keys', tablefmt='fancy_grid', showindex=True, numalign="center", stralign="left"))
-
-
-
-
-
 
 
 # ===============================================================================
@@ -397,7 +425,18 @@ if __name__ == "__main__":
     # Create end table
     end_table = EndTable( int_table )
 
-    # Add end combinations
+    # ==========================================================================================
+    # Add all posible combination of kids year groups to create generations
+    # ==========================================================================================
+    #               Intermediate table row idx   
+    
+    # Only homogen types
+    end_table.add( [0,1,5,6,7,8] )
+    end_table.add( [2,3,4,5,6,7,8] )
+
+    # Only heterogene types
+    end_table.add( [24,25] )
+
 
 
     # Show end table
