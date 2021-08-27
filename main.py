@@ -38,6 +38,11 @@ CURRENT_YEAR = 2021
 # ===============================================================================
 class KidsPopulation:
 
+    # Types of group
+    HOMOGENE_GROUPE     = { "name": "Homogen",      "weight": 1 }
+    HETEROGENE_GROUPE   = { "name": "Heterogen",    "weight": 2 }
+    COMBINATION_GROUPE  = { "name": "Kombiniran",   "weight": 3 }
+
     # ===============================================================================
     # @brief:   Create kids population
     #
@@ -91,15 +96,15 @@ class KidsPopulation:
     
 
 # ===============================================================================
-# @brief:   Distribution table
+# @brief:   Intermediate table
 #
-#   Based on disctibution table later evaluation of best fit to groupe
+#   Based on intermediate table later evaluation of best fit to groupe
 #   will be done. 
 # 
 #   This table is basis for later analysis and evaluations of best results.
 #   
 # ===============================================================================
-class DistributionTable(KidsPopulation):
+class IntermediateTable(KidsPopulation):
 
     # ===============================================================================
     # @brief:   Create distribution table
@@ -144,7 +149,7 @@ class DistributionTable(KidsPopulation):
         result = self.__evaluate_case__( num_of_groups, num_of_remains )
 
         # Fill table
-        self.table["Tip"].append(type)
+        self.table["Tip"].append(type["name"])
         self.table["Posebnost"].append(exception)
         self.table["Starostni razred"].append(years)
         self.table["Velikosti razred"].append(size_of_groupe)
@@ -259,41 +264,41 @@ if __name__ == "__main__":
     # Show kids population
     kids.print()
     
-    # Create distribution table for calculation and evaluation purposes
-    table = DistributionTable( kids )
+    # Create intermediate table for calculation and evaluation purposes
+    table = IntermediateTable( kids )
     
     # ==========================================================================================
     # Add all posible combination of kids groups based on year and size of groupe criteria
     # ==========================================================================================
-    #           Type            Years                   Grupe limits        Posebnost
-    table.add(  "Homogen",      [0,1],                  [9,12]       );
-    table.add(  "Homogen",      [1,2],                  [9,12]       );
-    table.add(  "Homogen",      [0,0],                  [9,12]       );
-    table.add(  "Homogen",      [1,1],                  [9,12]       );
-    table.add(  "Homogen",      [2,2],                  [9,12]       );
-    table.add(  "Homogen",      [3,4],                  [12,17]      );
-    table.add(  "Homogen",      [4,5],                  [17,22]      );
-    table.add(  "Homogen",      [5,6],                  [17,22]      );
-    table.add(  "Homogen",      [6,7],                  [17,22]      );
-    table.add(  "Homogen",      [3],                    [17,22]      );
-    table.add(  "Homogen",      [4],                    [17,22]      );
-    table.add(  "Homogen",      [5],                    [17,22]      );
-    table.add(  "Homogen",      [6],                    [17,22]      );
-    table.add(  "Homogen",      [7],                    [17,22]      );
-    table.add(  "Homogen",      [0,1,2],                [9,12],         1   );
-    table.add(  "Homogen",      [3,4,5],                [12,17],        1   );
-    table.add(  "Homogen",      [3,4,5],                [17,22],        1   );
-    table.add(  "Homogen",      [3,4,5,6],              [12,17],        1   );
-    table.add(  "Homogen",      [3,4,5,6],              [17,22],        1   );
-    table.add(  "Homogen",      [3,4,5,6,7],            [12,17],        1   );
-    table.add(  "Homogen",      [3,4,5,6,7],            [17,22],        1   );
-    table.add(  "Homogen",      [4,5,6],                [17,22],        1   );
-    table.add(  "Homogen",      [4,5,6,7],              [17,12],        1   );
-    table.add(  "Homogen",      [5,6,7],                [17,22],        1   );
-    table.add(  "Heterogen",    [0,1,2],                [7,10]      );
-    table.add(  "Heterogen",    [3,4,5,6,7],            [14,19]     );
-    table.add(  "Kombiniran",   [0,1,2,3,4,5,6,7],      [10,17]     );
-
+    #           Type                        Years                   Grupe limits     
+    table.add(  kids.HOMOGENE_GROUPE,      [0,1],                  [9,12]       );
+    table.add(  kids.HOMOGENE_GROUPE,      [1,2],                  [9,12]       );
+    table.add(  kids.HOMOGENE_GROUPE,      [0,0],                  [9,12]       );
+    table.add(  kids.HOMOGENE_GROUPE,      [1,1],                  [9,12]       );
+    table.add(  kids.HOMOGENE_GROUPE,      [2,2],                  [9,12]       );
+    table.add(  kids.HOMOGENE_GROUPE,      [3,4],                  [12,17]      );
+    table.add(  kids.HOMOGENE_GROUPE,      [4,5],                  [17,22]      );
+    table.add(  kids.HOMOGENE_GROUPE,      [5,6],                  [17,22]      );
+    table.add(  kids.HOMOGENE_GROUPE,      [6,7],                  [17,22]      );
+    table.add(  kids.HOMOGENE_GROUPE,      [3],                    [17,22]      );
+    table.add(  kids.HOMOGENE_GROUPE,      [4],                    [17,22]      );
+    table.add(  kids.HOMOGENE_GROUPE,      [5],                    [17,22]      );
+    table.add(  kids.HOMOGENE_GROUPE,      [6],                    [17,22]      );
+    table.add(  kids.HOMOGENE_GROUPE,      [7],                    [17,22]      );
+    table.add(  kids.HOMOGENE_GROUPE,      [0,1,2],                [9,12],      exception=1   );
+    table.add(  kids.HOMOGENE_GROUPE,      [3,4,5],                [12,17],     exception=1   );
+    table.add(  kids.HOMOGENE_GROUPE,      [3,4,5],                [17,22],     exception=1   );
+    table.add(  kids.HOMOGENE_GROUPE,      [3,4,5,6],              [12,17],     exception=1   );
+    table.add(  kids.HOMOGENE_GROUPE,      [3,4,5,6],              [17,22],     exception=1   );
+    table.add(  kids.HOMOGENE_GROUPE,      [3,4,5,6,7],            [12,17],     exception=1   );
+    table.add(  kids.HOMOGENE_GROUPE,      [3,4,5,6,7],            [17,22],     exception=1   );
+    table.add(  kids.HOMOGENE_GROUPE,      [4,5,6],                [17,22],     exception=1   );
+    table.add(  kids.HOMOGENE_GROUPE,      [4,5,6,7],              [17,12],     exception=1   );
+    table.add(  kids.HOMOGENE_GROUPE,      [5,6,7],                [17,22],     exception=1   );
+    table.add(  kids.HETEROGENE_GROUPE,    [0,1,2],                [7,10]      );
+    table.add(  kids.HETEROGENE_GROUPE,    [3,4,5,6,7],            [14,19]     );
+    table.add(  kids.COMBINATION_GROUPE,   [0,1,2,3,4,5,6,7],      [10,17]     );
+    
     # Add more here if needed...
 
     # Show distributiom table
