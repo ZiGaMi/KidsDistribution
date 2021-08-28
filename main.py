@@ -153,7 +153,7 @@ class IntermediateTable(KidsPopulation):
         num_of_groups, num_of_remains = self.__calc_num_of_groups__( size_of_groupe, num_of_kids )
 
         # Determine result
-        result = self.__calc_result__( type, num_of_groups, num_of_remains, exception )
+        result = self.__calc_result__( type, num_of_kids, dist_of_kids, num_of_groups, num_of_remains, exception )
 
         # Fill table
         self.table["Tip"].append(type["name"])
@@ -234,7 +234,7 @@ class IntermediateTable(KidsPopulation):
     # @param[in]:   num_of_remains  - Number of remains child
     # @return:      resutl          - Result of evaluation
     # ===============================================================================  
-    def __calc_result__(self, type, num_of_groups, num_of_remains, exception):
+    def __calc_result__(self, type, num_of_kids, dist_of_kids, num_of_groups, num_of_remains, exception):
         result = 1
 
         # Apply type of groupe
@@ -254,7 +254,26 @@ class IntermediateTable(KidsPopulation):
         if exception is not None:
             result *= 0.5
 
-            # TODO: Add more logic...
+            if self.kids.HOMOGENE_GROUPE == type:
+                pass
+
+            elif self.kids.HETEROGENE_GROUPE == type:
+                
+                # Max. 3-year kids is 10 per groupe
+                num_of_three = dist_of_kids[3]
+
+                # We have an exception
+                if num_of_three <= ( 10 * num_of_groups ):
+                    result *= 0.5
+                
+                # We wanted an exception and get shit
+                else:
+                    result *= 10
+
+            elif self.kids.COMBINATION_GROUPE == type:
+                pass
+
+
 
         return result
     
@@ -423,10 +442,10 @@ if __name__ == "__main__":
     # Generate population
     kids.add( 2021, 10 )
     kids.add( 2020, 10 )
-    kids.add( 2019, 10 )
+    kids.add( 2019, 0 )
     kids.add( 2018, 18 )
     kids.add( 2017, 18 )
-    kids.add( 2016, 36 )
+    kids.add( 2016, 0 )
     kids.add( 2015, 36 )
     kids.add( 2014, 0 )
 
@@ -471,7 +490,9 @@ if __name__ == "__main__":
     int_table.add(  kids.HOMOGENE_GROUPE,      [5,6,7],                [17,22],     exception=1   );
     int_table.add(  kids.HETEROGENE_GROUPE,    [0,1,2],                [7,10]      );
     int_table.add(  kids.HETEROGENE_GROUPE,    [3,4,5,6,7],            [14,19]     );
+    int_table.add(  kids.HETEROGENE_GROUPE,    [3,4,5,6,7],            [14,19],     exception=1    );
     int_table.add(  kids.COMBINATION_GROUPE,   [0,1,2,3,4,5,6,7],      [10,17]     );
+    int_table.add(  kids.COMBINATION_GROUPE,   [0,1,2,3,4,5,6,7],      [10,17],     exception=1     );
     
     # Add more here if needed...
 
