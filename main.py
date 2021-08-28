@@ -167,7 +167,7 @@ class IntermediateTable(KidsPopulation):
         exception_res = self.__check_for_exceptions( type, num_of_kids, dist_of_kids, size_of_groupe, num_of_groups, num_of_remains, exception )
 
         # Calculate result
-        result = self.__calc_result__( type, num_of_kids, dist_of_kids, size_of_groupe, num_of_groups, num_of_remains, exception_res )
+        result = self.__calc_result__( type, num_of_groups, num_of_remains, exception_res )
 
         # Define distribution possibility
         dist_possible = self.__check_dist_possibility__( exception_res, num_of_groups, num_of_remains )
@@ -313,7 +313,7 @@ class IntermediateTable(KidsPopulation):
     # @param[in]:   num_of_remains  - Number of remains child
     # @return:      resutl          - Result of evaluation
     # ===============================================================================  
-    def __calc_result__(self, type, num_of_kids, dist_of_kids, size_of_groupe, num_of_groups, num_of_remains, exception_res):
+    def __calc_result__(self, type, num_of_groups, num_of_remains, exception_res):
         result = 1
 
         # Apply type of groupe
