@@ -126,6 +126,7 @@ class IntermediateTable(KidsPopulation):
                         "Stevilo otrok":        [],
                         "Distribucija otrok":   [],
                         "Stevilo oddelkov":     [],
+                        "Stevilo ostankov":     [],
                         "Rezultat":             [],
                         }
         
@@ -161,7 +162,8 @@ class IntermediateTable(KidsPopulation):
         self.table["Velikosti razred"].append(size_of_groupe)
         self.table["Stevilo otrok"].append( num_of_kids )
         self.table["Distribucija otrok"].append( dist_of_kids )
-        self.table["Stevilo oddelkov"].append( "%d (%s)" % ( num_of_groups, num_of_remains ))
+        self.table["Stevilo oddelkov"].append( num_of_groups )
+        self.table["Stevilo ostankov"].append( num_of_remains )
         self.table["Rezultat"].append( "%s" % ( result ))
 
     # ===============================================================================
@@ -252,6 +254,8 @@ class IntermediateTable(KidsPopulation):
         if exception is not None:
             result *= 0.5
 
+            # TODO: Add more logic...
+
         return result
     
     def get_type(self, idx):
@@ -281,6 +285,12 @@ class IntermediateTable(KidsPopulation):
     def get_result(self, idx):
         return float(self.table["Rezultat"][idx])
 
+    def get_num_of_groups(self, idx):
+        return int(self.table["Stevilo oddelkov"][idx])
+
+    def get_num_of_kids(self, idx):
+        return int(self.table["Stevilo otrok"][idx])
+
 
 
 # ===============================================================================
@@ -301,11 +311,13 @@ class EndTable(IntermediateTable):
     # @return:      void
     # ===============================================================================  
     def __init__(self, intermediate_table):
-        self.end_table = {  "Kombinacija let otrok":        [],
+        self.end_table = {  "Index vmesne tabele":          [],
+                            "Kombinacija let otrok":        [],
                             "Koncni rezultat":              [],
-                            "Št. homogenih sk.":            [],
-                            "Št. heterogenih sk.":          [],
-                            "Št. kombiniranih sk.":         [],
+                            "Pokritost skupin":             [],
+                            "# homogenih odd.":             [],
+                            "# heterogenih odd.":           [],
+                            "# kombiniranih odd.":          [],
                            # "Homogena sk. po letih":        [],
                             #"Heterogena sk. po letih":      [],
                            # "Kombinirana sk. po letih":     [],
@@ -321,40 +333,71 @@ class EndTable(IntermediateTable):
         num_of_homogen = 0
         num_of_heterogen = 0
         num_of_combination = 0
+        num_of_homogen_gr = 0
+        num_of_heterogen_gr = 0
+        num_of_combination_gr = 0
         homogen_years = []
         heterogen_years = []
         combination_years = []
+
+        num_of_empty_groups = 0
 
         for idx in int_table_idx:
             #self.end_table["Kombinacija let otrok"].append( self.intermediate_table.get_years(idx) )
             years.append( self.intermediate_table.get_years(idx) )
 
             if self.intermediate_table.is_homogene_type( idx ):
-                num_of_homogen += 1
-                #homogen_years.append(self.intermediate_table.get_years(idx))
-            elif self.intermediate_table.is_heterogene_type(idx):
-                num_of_heterogen += 1
-                #heterogen_years.append(self.intermediate_table.get_years(idx))
-            elif self.intermediate_table.is_combination_type(idx):
-                num_of_combination += 1
-                #combination_years.append(self.intermediate_table.get_years(idx))
+                num_of_homogen_gr += self.intermediate_table.get_num_of_groups(idx)
+                if self.intermediate_table.get_num_of_groups(idx) > 0:
+                    num_of_homogen += 1
+                    #homogen_years.append(self.intermediate_table.get_years(idx))
 
-            # Sum result 
-            result += self.intermediate_table.get_result(idx)
+            elif self.intermediate_table.is_heterogene_type(idx):
+                num_of_heterogen_gr += self.intermediate_table.get_num_of_groups(idx)
+                if self.intermediate_table.get_num_of_groups(idx) > 0:
+                    num_of_heterogen += 1
+                    #heterogen_years.append(self.intermediate_table.get_years(idx))
+
+            elif self.intermediate_table.is_combination_type(idx):
+                num_of_combination_gr += self.intermediate_table.get_num_of_groups(idx)
+                if self.intermediate_table.get_num_of_groups(idx) > 0:
+                    num_of_combination += 1
+                    #combination_years.append(self.intermediate_table.get_years(idx))
+
+
+            # No kids in that group
+            ## NOTE: Will not affect end result!
+            if 0 == self.intermediate_table.get_num_of_kids(idx):
+                num_of_empty_groups += 1
+
+            # Any kids in group
+            else:
+
+                # Sum result 
+                result += self.intermediate_table.get_result(idx)
         
-        # Calculate end result
-        result = result / len( int_table_idx )
+        # Calculate end result and full gorup percent
+        groupe_full_per = 0
+        try:
+            result = result / ( len( int_table_idx ) - num_of_empty_groups )
+            groupe_full_per = float(( num_of_homogen + num_of_heterogen + num_of_combination ) / ( len( int_table_idx ) - num_of_empty_groups ) * 100.0 )
+        except Exception as e: 
+            print(e) 
+
+        # Save indexes
+        self.end_table["Index vmesne tabele"].append( int_table_idx )
 
         # Save years
         self.end_table["Kombinacija let otrok"].append( years )
 
         # Save result
         self.end_table["Koncni rezultat"].append( result )
+        self.end_table["Pokritost skupin"].append( "%.1f %%" % groupe_full_per )
 
         # Save number of each groupe type
-        self.end_table["Št. homogenih sk."].append( num_of_homogen )
-        self.end_table["Št. heterogenih sk."].append( num_of_heterogen )
-        self.end_table["Št. kombiniranih sk."].append( num_of_combination )
+        self.end_table["# homogenih odd."].append( num_of_homogen_gr )
+        self.end_table["# heterogenih odd."].append( num_of_heterogen_gr )
+        self.end_table["# kombiniranih odd."].append( num_of_combination_gr )
 
         #self.end_table["Homogena sk. po letih"].append( homogen_years )
         #self.end_table["Heterogena sk. po letih"].append( heterogen_years )
@@ -378,16 +421,21 @@ if __name__ == "__main__":
     kids = KidsPopulation( CURRENT_YEAR )
 
     # Generate population
-    kids.add( 2021, 5 )
-    kids.add( 2020, 8 )
-    kids.add( 2019, 15 )
-    kids.add( 2018, 11 )
-    kids.add( 2017, 24 )
-    kids.add( 2016, 15 )
-    kids.add( 2015, 1 )
+    kids.add( 2021, 10 )
+    kids.add( 2020, 10 )
+    kids.add( 2019, 10 )
+    kids.add( 2018, 18 )
+    kids.add( 2017, 18 )
+    kids.add( 2016, 36 )
+    kids.add( 2015, 36 )
     kids.add( 2014, 0 )
 
     # Show kids population
+    print("")
+    print("*******************************************************************************************************")
+    print("     INPUT TABLE")
+    print("*******************************************************************************************************")
+    print("")
     kids.print()
     
     # Create intermediate table for calculation and evaluation purposes
@@ -399,13 +447,13 @@ if __name__ == "__main__":
     #           Type                        Years                   Grupe limits     
     int_table.add(  kids.HOMOGENE_GROUPE,      [0,1],                  [9,12]       );
     int_table.add(  kids.HOMOGENE_GROUPE,      [1,2],                  [9,12]       );
-    int_table.add(  kids.HOMOGENE_GROUPE,      [0,0],                  [9,12]       );
-    int_table.add(  kids.HOMOGENE_GROUPE,      [1,1],                  [9,12]       );
-    int_table.add(  kids.HOMOGENE_GROUPE,      [2,2],                  [9,12]       );
     int_table.add(  kids.HOMOGENE_GROUPE,      [3,4],                  [12,17]      );
     int_table.add(  kids.HOMOGENE_GROUPE,      [4,5],                  [17,22]      );
     int_table.add(  kids.HOMOGENE_GROUPE,      [5,6],                  [17,22]      );
     int_table.add(  kids.HOMOGENE_GROUPE,      [6,7],                  [17,22]      );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [0],                    [9,12]      );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [1],                    [9,12]      );
+    int_table.add(  kids.HOMOGENE_GROUPE,      [2],                    [9,12]      );
     int_table.add(  kids.HOMOGENE_GROUPE,      [3],                    [17,22]      );
     int_table.add(  kids.HOMOGENE_GROUPE,      [4],                    [17,22]      );
     int_table.add(  kids.HOMOGENE_GROUPE,      [5],                    [17,22]      );
@@ -444,14 +492,16 @@ if __name__ == "__main__":
     #               Intermediate table row idx   
     
     # Only homogen types
-    end_table.add( [0,1,5,6,7,8] )
-    end_table.add( [2,3,4,5,6,7,8] )
+    end_table.add( [6,7,8,9,10,11,12,13] )
 
     # Only heterogene types
     end_table.add( [24,25] )
 
     # Combination of homogene & heterogene
     end_table.add( [24, 19] )
+
+    # Only combination
+    end_table.add( [26] )
 
 
     # Show end table
