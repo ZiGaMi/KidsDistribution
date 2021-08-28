@@ -28,6 +28,16 @@ CURRENT_YEAR = 2021
 #       of possible combination in end table
 GROUP_ZERO_MAGIC_NUM = 57
 
+# =========================
+# Weights for resutls
+# =========================
+
+## Exception weights
+EXCEPTION_APPLIED_WEIGHT        = 0.5
+EXCEPTION_NOT_APPLIED_WEIGHT    = 5
+
+
+
 # ===============================================================================
 #       FUNCTIONS
 # ===============================================================================
@@ -128,6 +138,7 @@ class IntermediateTable(KidsPopulation):
                         "Stevilo oddelkov":     [],
                         "Stevilo ostankov":     [],
                         "Rezultat":             [],
+                        "Moznost razvrstitve":  [],
                         }
         
         self.kids = pop
@@ -152,8 +163,14 @@ class IntermediateTable(KidsPopulation):
         # Calculate number of groups
         num_of_groups, num_of_remains = self.__calc_num_of_groups__( size_of_groupe, num_of_kids )
 
-        # Determine result
-        result = self.__calc_result__( type, num_of_kids, dist_of_kids, num_of_groups, num_of_remains, exception )
+        # Check exceptions
+        exception_res = self.__check_for_exceptions( type, num_of_kids, dist_of_kids, size_of_groupe, num_of_groups, num_of_remains, exception )
+
+        # Calculate result
+        result = self.__calc_result__( type, num_of_kids, dist_of_kids, size_of_groupe, num_of_groups, num_of_remains, exception_res )
+
+        # Define distribution possibility
+        dist_possible = self.__check_dist_possibility__( exception_res, num_of_groups, num_of_remains )
 
         # Fill table
         self.table["Tip"].append(type["name"])
@@ -165,6 +182,7 @@ class IntermediateTable(KidsPopulation):
         self.table["Stevilo oddelkov"].append( num_of_groups )
         self.table["Stevilo ostankov"].append( num_of_remains )
         self.table["Rezultat"].append( "%s" % ( result ))
+        self.table["Moznost razvrstitve"].append( dist_possible )
 
     # ===============================================================================
     # @brief:   Print out distributioon table
@@ -216,13 +234,74 @@ class IntermediateTable(KidsPopulation):
     def __calc_distribution(self, years):
         dist = []
         
-        for age in range(7):
+        for age in range(8):
             if age in years:
                 dist.append( self.kids.get_num_of_kids_by_age_specific( [age] ))
             else:
                 dist.append( 0 )
         
         return dist
+
+
+
+    def __check_for_exceptions(self, type, num_of_kids, dist_of_kids, size_of_groupe, num_of_groups, num_of_remains, exception):
+
+        exception_res = None
+
+        if exception is not None:
+            
+            # Homogene exceptions
+            if self.kids.HOMOGENE_GROUPE == type:
+                # TODO: ...
+                exception_res = 1
+
+            # Heterogene exceptions
+            elif self.kids.HETEROGENE_GROUPE == type:
+                
+                # Max. 3-year kids is 10 per groupe
+                num_of_three = dist_of_kids[3]
+
+                # We have an exception
+                if num_of_three <= ( 10 * num_of_groups ):
+                    exception_res = 1
+                
+                # We wanted an exception and get shit
+                else:
+                    exception_res = 0
+
+            # Combination exceptions
+            elif self.kids.COMBINATION_GROUPE == type:
+
+                # TCalculate kids in first and second age groupe
+                num_of_kids_0_2 = dist_of_kids[0] + dist_of_kids[1] + dist_of_kids[2]
+                num_of_kids_3_7 = dist_of_kids[3] + dist_of_kids[4] + dist_of_kids[5] + dist_of_kids[6] + dist_of_kids[7]
+
+                # Condition for exception
+                if num_of_kids_0_2 >= 3:
+                    
+                    # First age groupe is less or equal to 7
+                    if num_of_kids_0_2 <= 7:
+
+                        # Groupe is full
+                        if (num_of_kids_0_2 + num_of_kids_3_7) == size_of_groupe[1]:
+                            exception_res = 1
+                        
+                        # Groupe not full
+                        else:
+                            # TODO: ...
+                            pass
+
+                    # Additional logic
+                    else:
+                        # TODO: ...
+                        pass
+
+
+                # Exception not meet condition
+                else:
+                    exception_res = 0
+
+        return exception_res
 
     # ===============================================================================
     # @brief:   Evaluation of case
@@ -234,7 +313,7 @@ class IntermediateTable(KidsPopulation):
     # @param[in]:   num_of_remains  - Number of remains child
     # @return:      resutl          - Result of evaluation
     # ===============================================================================  
-    def __calc_result__(self, type, num_of_kids, dist_of_kids, num_of_groups, num_of_remains, exception):
+    def __calc_result__(self, type, num_of_kids, dist_of_kids, size_of_groupe, num_of_groups, num_of_remains, exception_res):
         result = 1
 
         # Apply type of groupe
@@ -249,33 +328,33 @@ class IntermediateTable(KidsPopulation):
         # Apply number of remains
         result *= ( 2*num_of_remains + 1 )
 
-        # Apply exception
-        # NOTE: Exception is wanted!
-        if exception is not None:
-            result *= 0.5
-
-            if self.kids.HOMOGENE_GROUPE == type:
-                pass
-
-            elif self.kids.HETEROGENE_GROUPE == type:
-                
-                # Max. 3-year kids is 10 per groupe
-                num_of_three = dist_of_kids[3]
-
-                # We have an exception
-                if num_of_three <= ( 10 * num_of_groups ):
-                    result *= 0.5
-                
-                # We wanted an exception and get shit
-                else:
-                    result *= 10
-
-            elif self.kids.COMBINATION_GROUPE == type:
-                pass
-
-
+        # Exception not applied
+        if exception_res == 0:
+            result *= EXCEPTION_NOT_APPLIED_WEIGHT
+        elif exception_res == 1:
+            result *= EXCEPTION_APPLIED_WEIGHT
 
         return result
+
+
+    def __check_dist_possibility__(self, exception_res, num_of_groups, num_of_remains):
+        dist_possible = 1
+
+        if exception_res == 0:
+            dist_possible = 0
+
+        if num_of_groups == 0:
+            dist_possible = 0
+
+        if num_of_remains > 0:
+            dist_possible = 0
+
+        return dist_possible
+
+
+
+
+
     
     def get_type(self, idx):
         return self.table["Tip"][idx]
@@ -309,6 +388,9 @@ class IntermediateTable(KidsPopulation):
 
     def get_num_of_kids(self, idx):
         return int(self.table["Stevilo otrok"][idx])
+
+    def get_dist_possibility(self, idx):
+        return int( self.table["Moznost razvrstitve"][idx] )
 
 
 
@@ -361,6 +443,8 @@ class EndTable(IntermediateTable):
 
         num_of_empty_groups = 0
 
+        dist_possible = 1
+
         for idx in int_table_idx:
             #self.end_table["Kombinacija let otrok"].append( self.intermediate_table.get_years(idx) )
             years.append( self.intermediate_table.get_years(idx) )
@@ -394,12 +478,16 @@ class EndTable(IntermediateTable):
 
                 # Sum result 
                 result += self.intermediate_table.get_result(idx)
+
+                # Distribution possible
+                dist_possible &= self.intermediate_table.get_dist_possibility(idx)
         
         # Calculate end result and full gorup percent
         groupe_full_per = 0
         try:
             result = result / ( len( int_table_idx ) - num_of_empty_groups )
             groupe_full_per = float(( num_of_homogen + num_of_heterogen + num_of_combination ) / ( len( int_table_idx ) - num_of_empty_groups ) * 100.0 )
+            groupe_full_per *= dist_possible
         except Exception as e: 
             print(e) 
 
@@ -442,7 +530,7 @@ if __name__ == "__main__":
     # Generate population
     kids.add( 2021, 10 )
     kids.add( 2020, 10 )
-    kids.add( 2019, 0 )
+    kids.add( 2019, 3 )
     kids.add( 2018, 18 )
     kids.add( 2017, 18 )
     kids.add( 2016, 0 )
